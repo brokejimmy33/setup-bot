@@ -5,6 +5,40 @@ import json
 import asyncio
 import os
 import os
+import os
+import traceback
+
+while True:
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        with open("error_log.txt", "a") as f:
+            f.write(traceback.format_exc())
+        time.sleep(10)
+
+import discord
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.message_content = True  # Needed to read messages
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+import time
+from keep_alive import keep_alive
+import discord
+from discord.ext import commands
+
+keep_alive()
+
+while True:
+    try:
+        bot = commands.Bot(command_prefix="!")
+        # your bot setup here
+        bot.run(os.getenv("DISCORD_TOKEN"))
+    except Exception as e:
+        print(f"Bot crashed with error: {e}")
+        time.sleep(5)
+
 from flask import Flask
 from threading import Thread
 
