@@ -4,74 +4,37 @@ from discord import app_commands, Interaction
 import json
 import asyncio
 import os
-import os
-import os
-import traceback
-
-while True:
-    try:
-        bot.run(TOKEN)
-    except Exception as e:
-        with open("error_log.txt", "a") as f:
-            f.write(traceback.format_exc())
-        time.sleep(10)
-
-import discord
-from discord.ext import commands
-
-intents = discord.Intents.default()
-intents.message_content = True  # Needed to read messages
-bot = commands.Bot(command_prefix='!', intents=intents)
-
 import time
-from keep_alive import keep_alive
-import discord
-from discord.ext import commands
-
-keep_alive()
-
-while True:
-    try:
-        bot = commands.Bot(command_prefix="!")
-        # your bot setup here
-        bot.run(os.getenv("DISCORD_TOKEN"))
-    except Exception as e:
-        print(f"Bot crashed with error: {e}")
-        time.sleep(5)
-
+import traceback
+from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
 
-app = Flask('')
+# --- Load environment variables ---
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
 
+# --- Flask Keep Alive ---
+app = Flask('')
 
 @app.route('/')
 def home():
     return "I'm alive!"
 
-
 def run():
     app.run(host='0.0.0.0', port=8080)
-
 
 def keep_alive():
     t = Thread(target=run)
     t.start()
 
-
-from dotenv import load_dotenv
-
-load_dotenv()  # Loads .env file into environment
-TOKEN = os.getenv("DISCORD_TOKEN")
-
-# --- Constants ---
-CONFIG_FILE = "config.json"
-
-# --- Bot setup ---
+# --- Bot Setup ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
+# --- Constants ---
+CONFIG_FILE = "config.json"
 
 # --- Config management ---
 def load_config():
@@ -81,21 +44,17 @@ def load_config():
     with open(CONFIG_FILE, "r") as f:
         return json.load(f)
 
-
 def save_config(data):
     with open(CONFIG_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-
 config = load_config()
-
 
 def get_guild_config(guild_id):
     gid = str(guild_id)
     if gid not in config:
         config[gid] = {}
     return config[gid]
-
 
 # --- Logging helper ---
 async def log_action(guild, message):
@@ -104,10 +63,8 @@ async def log_action(guild, message):
     if log_channel_id:
         channel = guild.get_channel(log_channel_id)
         if channel:
-            embed = discord.Embed(description=message,
-                                  color=discord.Color.orange())
+            embed = discord.Embed(description=message, color=discord.Color.orange())
             await channel.send(embed=embed)
-
 
 # --- Events ---
 @bot.event
@@ -115,11 +72,9 @@ async def on_ready():
     for guild in bot.guilds:
         await tree.sync(guild=guild)
         print(f"✅ Synced commands to: {guild.name} ({guild.id})")
-
-    await tree.sync()  # Global sync
+    await tree.sync()
     print(f"✅ Global command sync complete")
     print(f"✅ Bot is online as {bot.user}")
-
 
 @bot.event
 async def on_member_join(member):
@@ -131,33 +86,36 @@ async def on_member_join(member):
             await member.add_roles(role)
             print(f"✅ Auto-role '{role.name}' assigned to {member}")
 
-    # Welcome message in #🌱-start-here if exists
-    channel = discord.utils.get(member.guild.text_channels,
-                                name="🌱-start-here")
+    channel = discord.utils.get(member.guild.text_channels, name="🌱-start-here")
     if channel:
-        await channel.send(
-            f"🎉 Welcome {member.mention} to **{member.guild.name}**!")
+        await channel.send(f"🎉 Welcome {member.mention} to **{member.guild.name}**!")
 
-    # Welcome DM
     try:
-        await member.send(
-            f"Welcome to **{member.guild.name}**! Enjoy your stay 🥔")
+        await member.send(f"Welcome to **{member.guild.name}**! Enjoy your stay 🥔")
     except Exception:
         pass
 
     await log_action(member.guild, f"🌐 {member} joined the server.")
 
-
 @bot.event
 async def on_member_remove(member):
     await log_action(member.guild, f"❌ {member} has left the server.")
 
-
-# --- Error handling ---
 @bot.event
 async def on_app_command_error(interaction: Interaction, error):
     await interaction.response.send_message(f"❌ Error: {error}")
 
+# --- Commands ---
+# (Keep your slash commands here as in your original code)
+
+# --- Start the Bot ---
+keep_alive()
+try:
+    bot.run(TOKEN)
+except Exception as e:
+    with open("error_log.txt", "a") as f:
+        f.write(traceback.format_exc())
+    time.sleep(10)
 
 # --- Commands ---
 
@@ -489,6 +447,10 @@ async def resync(interaction: Interaction):
     await interaction.response.send_message("🔄 Slash commands resynced!")
 
 
-TOKEN = os.getenv("DISCORD_TOKEN")
 keep_alive()
-bot.run(TOKEN)
+try:
+    bot.run(TOKEN)
+except Exception as e:
+    with open("error_log.txt", "a") as f:
+        f.write(traceback.format_exc())
+    time.sleep(10)
