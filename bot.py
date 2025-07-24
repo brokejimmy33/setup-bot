@@ -6,9 +6,13 @@ import asyncio
 import os
 import time
 import traceback
+import time
 from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
+from discord.ext import commands
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
 
 # --- Load environment variables ---
 load_dotenv()
